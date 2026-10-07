@@ -31,7 +31,7 @@ export default function Favorites() {
           contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: insets.bottom + spacing.xl }}
           ListEmptyComponent={
             <EmptyState icon="heart-outline" title="Aucun favori" text="Touchez le cœur sur la fiche d'un lieu pour l'ajouter ici." testID="favorites-empty"
-              action={<Button label="Découvrir des lieux" onPress={() => router.push("/")} testID="favorites-go-discover" />} />
+              action={<Button label="Découvrir des lieux" onPress={() => router.push("/discover")} testID="favorites-go-discover" />} />
           }
         />
       )}

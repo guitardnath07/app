@@ -28,6 +28,7 @@ export const MAP_HTML = `<!DOCTYPE html>
   .pp .b { padding: 12px 14px 14px; }
   .pp .c { font-size: 10px; letter-spacing: .6px; text-transform: uppercase; color: #8E8E93; font-weight: 600; }
   .pp .n { font-size: 16px; font-weight: 700; margin: 2px 0 6px; letter-spacing: -.2px; }
+  .pp .a { font-size: 12px; color: #B0B0B5; margin: -2px 0 8px; }
   .pp .r { display: flex; gap: 8px; align-items: center; font-size: 12px; color: #E0E0E0; }
   .pp .d { background: #432616; color: #F4B376; font-weight: 700; padding: 2px 7px; border-radius: 6px; }
   .pp button { margin-top: 12px; width: 100%; height: 40px; border: 0; border-radius: 20px; background: #E27443; color: #fff; font-weight: 700; font-size: 14px; }
@@ -41,10 +42,12 @@ export const MAP_HTML = `<!DOCTYPE html>
 <script>
   var CAT = {
     resto:    { c: '#E27443', i: 'restaurant',     l: 'Restaurant' },
-    bar:      { c: '#D6336C', i: 'local_bar',      l: 'Bar' },
+    fastfood: { c: '#F2A900', i: 'lunch_dining',   l: 'Fast-food' },
+    fleuriste:{ c: '#EC4899', i: 'local_florist',  l: 'Fleuriste' },
+    bar:      { c: '#9D174D', i: 'local_bar',      l: 'Bar' },
     club:     { c: '#3D5AFE', i: 'nightlife',      l: 'Boîte de nuit' },
     loisirs:  { c: '#20A464', i: 'sports_tennis',  l: 'Loisirs & Sport' },
-    culture:  { c: '#E8A317', i: 'museum',         l: 'Culture' },
+    culture:  { c: '#7C5CFC', i: 'museum',         l: 'Culture' },
     commerce: { c: '#0E9AB5', i: 'storefront',     l: 'Commerce' }
   };
   var STOP = { tram: { c: '#0B6E4F', i: 'tram' }, bus: { c: '#2563EB', i: 'directions_bus' }, velo: { c: '#15803D', i: 'pedal_bike' } };
@@ -77,6 +80,7 @@ export const MAP_HTML = `<!DOCTYPE html>
     var b = el('div', 'b'); root.appendChild(b);
     b.appendChild(el('div', 'c', cat.l + (p.is_open ? ' · Ouvert' : ' · Fermé')));
     b.appendChild(el('div', 'n', p.name));
+    b.appendChild(el('div', 'a', p.address));
     var r = el('div', 'r'); b.appendChild(r);
     r.appendChild(el('span', null, '★ ' + p.rating.toFixed(1) + ' (' + p.reviews_count + ')'));
     if (p.best_discount > 0) r.appendChild(el('span', 'd', '-' + p.best_discount + '%'));

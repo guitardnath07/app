@@ -31,7 +31,7 @@ export type Transaction = {
 
 export type Finance = Stats & { savings_ratio: number; transactions: Transaction[] };
 
-export type Category = "resto" | "bar" | "club" | "loisirs" | "culture" | "commerce";
+export type Category = "resto" | "fastfood" | "bar" | "club" | "loisirs" | "culture" | "commerce" | "fleuriste";
 
 export type Deal = {
   id: string;

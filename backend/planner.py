@@ -86,13 +86,14 @@ def best_deal(place_id, people, student):
 
 SLOT_CATEGORIES = {
     "activite": ["culture", "loisirs", "commerce"],
-    "dejeuner": ["resto"],
-    "diner": ["resto"],
+    "dejeuner": ["resto", "fastfood"],
+    "diner": ["resto", "fastfood"],
+    "cadeau": ["fleuriste"],
     "soiree": ["bar"],
     "nuit": ["club"],
 }
 SLOT_LABELS = {
-    "activite": "Activité", "dejeuner": "Déjeuner", "diner": "Dîner", "soiree": "Soirée", "nuit": "Nuit",
+    "activite": "Activité", "cadeau": "Bouquet", "dejeuner": "Déjeuner", "diner": "Dîner", "soiree": "Soirée", "nuit": "Nuit",
 }
 
 
@@ -126,6 +127,7 @@ def build_plan(params: dict) -> dict:
     used = set()
     steps = []
     lunch_done = dinner_done = club_done = False
+    gift_done = people != 2
     idx = 0
     while t < end - 0.5 and idx < 16:
         if not lunch_done and t >= 14:
@@ -134,8 +136,10 @@ def build_plan(params: dict) -> dict:
             dinner_done = True
         if not lunch_done and t >= 11.75:
             slot = "dejeuner"
-        elif not dinner_done and t >= 19:
+        elif not dinner_done and (t >= 19 or (people == 2 and gift_done and t >= 18.5)):
             slot = "diner"
+        elif not gift_done and 17 <= t < 19 and (not dinner_done) and end >= 19.5:
+            slot = "cadeau"
         elif t >= 22.5 and "fete" in interests and not club_done and not minor and group != "senior":
             slot = "nuit"
         elif not minor and (t >= 21 or (t >= 17.5 and "fete" in interests)):
@@ -155,7 +159,8 @@ def build_plan(params: dict) -> dict:
             travel = compute_travel(prev, p, mode, people)
             arrival = t + travel["duration_min"] / 60
             stay = min(p["duration_min"] / 60, end - arrival)
-            if stay < 0.5 or not is_open_at(p, weekday, arrival, min(stay, 0.75)):
+            min_stay = 0.3 if slot == "cadeau" else 0.5
+            if stay < min_stay or not is_open_at(p, weekday, arrival, min(stay, 0.75)):
                 continue
             full = round(p["avg_price"] * people, 2)
             deal = best_deal(p["id"], people, student)
@@ -172,6 +177,8 @@ def build_plan(params: dict) -> dict:
                 score += 1.5
             if deal:
                 score += 1
+            if p["category"] == "fastfood":
+                score += 1.5 if budget / people < 35 else -1.5
             if group == "young" and (p["category"] in ADULT_CATEGORIES or "fete" in p["tags"] or p["price_level"] == 1):
                 score += 1.5
             elif group == "senior":
@@ -203,6 +210,9 @@ def build_plan(params: dict) -> dict:
             })
             prev = p
             t = arrival + stay
+        elif slot == "cadeau":
+            gift_done = True  # no florist available: skip the optional bouquet step
+            continue
         elif steps and steps[-1]["kind"] == "free":
             if steps[-1].get("_merged", 0) >= 1:
                 break  # nothing affordable/open left: end the day here
@@ -226,6 +236,8 @@ def build_plan(params: dict) -> dict:
             dinner_done = True
         elif slot == "nuit":
             club_done = True
+        elif slot == "cadeau":
+            gift_done = True
         idx += 1
 
     for s in steps:

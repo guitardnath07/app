@@ -46,6 +46,7 @@ export function PlaceCard({ place, index = 0, compact }: { place: Place; index?:
           <Text style={styles.name} numberOfLines={1}>
             {place.name}
           </Text>
+          <Text style={styles.addr} numberOfLines={1}>{place.address}</Text>
           <View style={styles.metaRow}>
             <Ionicons name="star" size={13} color="#F4B376" />
             <Text style={styles.meta}>
@@ -90,6 +91,7 @@ const useStyles = makeStyles((c) => ({
   bottom: { position: "absolute", left: spacing.lg, right: spacing.lg, bottom: spacing.lg, gap: 2 },
   cat: { fontFamily: font.medium, fontSize: 12, color: "rgba(255,255,255,0.75)", textTransform: "uppercase", letterSpacing: 0.6 },
   name: { fontFamily: font.bold, fontSize: 20, color: "#FFFFFF", letterSpacing: -0.3 },
+  addr: { fontFamily: font.regular, fontSize: 12, color: "rgba(255,255,255,0.75)" },
   metaRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   meta: { fontFamily: font.regular, fontSize: 13, color: "rgba(255,255,255,0.85)" },
 }));

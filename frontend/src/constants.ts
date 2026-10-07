@@ -1,16 +1,20 @@
 export { usesNativeTabs } from "@/src/navigation";
 
 export const CATEGORIES: { key: string; label: string; icon: string }[] = [
+  { key: "fastfood", label: "Fast-food", icon: "fast-food-outline" },
   { key: "resto", label: "Restos", icon: "restaurant-outline" },
   { key: "bar", label: "Bars", icon: "wine-outline" },
   { key: "club", label: "Boîtes", icon: "musical-notes-outline" },
   { key: "loisirs", label: "Loisirs", icon: "bicycle-outline" },
   { key: "culture", label: "Culture", icon: "color-palette-outline" },
   { key: "commerce", label: "Commerces", icon: "storefront-outline" },
+  { key: "fleuriste", label: "Fleuristes", icon: "flower-outline" },
 ];
 
 export const CATEGORY_LABEL: Record<string, string> = {
   resto: "Restaurant",
+  fastfood: "Fast-food",
+  fleuriste: "Fleuriste",
   bar: "Bar",
   club: "Boîte de nuit",
   loisirs: "Loisirs & Sport",

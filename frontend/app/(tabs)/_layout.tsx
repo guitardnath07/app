@@ -14,12 +14,16 @@ export default function TabsLayout() {
     return (
       <NativeTabs tintColor={colors.brandPrimary}>
         <NativeTabs.Trigger name="index">
+          <NativeTabs.Trigger.Icon sf="bubble.left.and.bubble.right.fill" />
+          <NativeTabs.Trigger.Label>René</NativeTabs.Trigger.Label>
+        </NativeTabs.Trigger>
+        <NativeTabs.Trigger name="discover">
           <NativeTabs.Trigger.Icon sf="safari.fill" />
           <NativeTabs.Trigger.Label>Découvrir</NativeTabs.Trigger.Label>
         </NativeTabs.Trigger>
         <NativeTabs.Trigger name="deals">
           <NativeTabs.Trigger.Icon sf="tag.fill" />
-          <NativeTabs.Trigger.Label>Bons plans</NativeTabs.Trigger.Label>
+          <NativeTabs.Trigger.Label>Promos</NativeTabs.Trigger.Label>
         </NativeTabs.Trigger>
         <NativeTabs.Trigger name="planner">
           <NativeTabs.Trigger.Icon sf="sparkles" />
@@ -52,11 +56,12 @@ export default function TabsLayout() {
           ...(Platform.OS === "web" ? { height: 64 } : {}),
         },
         tabBarItemStyle: { alignSelf: "center" },
-        tabBarLabelStyle: { fontFamily: font.medium, fontSize: 11 },
+        tabBarLabelStyle: { fontFamily: font.medium, fontSize: 10 },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: "Découvrir", tabBarButtonTestID: "tab-discover", tabBarIcon: icon("compass", "compass-outline") }} />
-      <Tabs.Screen name="deals" options={{ title: "Bons plans", tabBarButtonTestID: "tab-deals", tabBarIcon: icon("pricetags", "pricetags-outline") }} />
+      <Tabs.Screen name="index" options={{ title: "René", tabBarButtonTestID: "tab-rene", tabBarIcon: icon("chatbubbles", "chatbubbles-outline") }} />
+      <Tabs.Screen name="discover" options={{ title: "Découvrir", tabBarButtonTestID: "tab-discover", tabBarIcon: icon("compass", "compass-outline") }} />
+      <Tabs.Screen name="deals" options={{ title: "Promos", tabBarButtonTestID: "tab-deals", tabBarIcon: icon("pricetags", "pricetags-outline") }} />
       <Tabs.Screen name="planner" options={{ title: "Organiser", tabBarButtonTestID: "tab-planner", tabBarIcon: icon("sparkles", "sparkles-outline") }} />
       <Tabs.Screen name="account" options={{ title: "Compte", tabBarButtonTestID: "tab-profile", tabBarIcon: icon("person-circle", "person-circle-outline") }} />
     </Tabs>

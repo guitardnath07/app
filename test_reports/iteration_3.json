@@ -1,0 +1,40 @@
+{
+  "summary": "CityPulse iteration 3 validation complete. Backend: 47/47 pytest pass (32 iter1+iter2 regression + 15 new iter3). Verified: GET /api/places returns exactly 35 lieux, every address matches ^\\d+.*\\d{5} .+ (number + CP5 + ville), category=fastfood=11, category=fleuriste=3, couple=true returns places all tagged 'couple'. GET /api/rene/greeting returns greeting/suggestion/places/quick_actions; adult has all 6 actions (fastfood/fleuriste/verre/club/idee/pluie); minor has verre/club filtered out and gets 'aprem' extra action, no bar/club in suggested places. POST /api/rene/chat (Claude, ~8-12s) returns {user, assistant} with assistant.text, places (<=3, all valid IDs), follow_ups; minor never receives bar/club places across actions idee/aprem/fastfood. GET+DELETE /api/rene/history round-trip works (clear sets to []). Planner people=2, 10h-22h creates the 'cadeau' slot between 17h-19h; fastfood can be slotted at dejeuner/diner. Regression on auth/me, deals, favorites toggle, itinerary CRUD all green. Frontend (390x844, seeded session): 5-tab bar (tab-rene/discover/deals/planner/profile) renders without overflow on René by default. René home shows rene-proactive-suggestion + rene-budget-pill + place cards with full addresses (e.g. '5 Place du Grand Marché, 37000 Tours'). All 6 rene-quick-* chips visible. Tapping rene-quick-fastfood shows chat-typing indicator then a René bubble + chat-follow-up-{0,1,2} chips (fastfood response correctly cites Poke House, Berliner Das Original, Burger King). Budget sheet opens via rene-budget-pill and rene-budget-30 is tappable. rene-clear-button visible. Discover tab: filter-category-fastfood / filter-category-fleuriste / filter-couple chips present and tappable; Carte toggle renders iframe with 35 .pin markers (matches catalogue). tab-deals, tab-planner, tab-profile all navigate. React Native: no deprecated expo-av/expo-barcode-scanner/expo-background-fetch. Only the pre-existing benign RNW 'props.pointerEvents is deprecated' warning persists (reanimated internal). ONE KNOWN BACKEND BUG discovered during planner testing: the 'cadeau' slot is created for couples 17h-19h but is NEVER filled with a fleuriste place; it falls through to a 'Temps libre' free step. Root cause: fleuriste places have duration_min=20 (0.33h) which is filtered out by the planner's `stay < 0.5` guard in planner.py around line 162. The slot label fallback is also wrong (shows 'Temps libre' instead of 'Bouquet' when the slot is 'cadeau').",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/planner/generate (people=2, 17h-19h)", "issue": "'cadeau' slot never filled with a fleuriste because fleuriste duration_min=20 fails the `stay < 0.5h` filter in planner.py:162. Also, when the slot falls through to the free-step branch (planner.py:223) the label is hardcoded to 'Temps libre' instead of SLOT_LABELS[slot] ('Bouquet'). Fix: raise fleuriste duration_min to 30+ or lower the min-stay threshold to 0.3h for 'cadeau' slot; and keep SLOT_LABELS[slot] in the free-step fallback."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": [
+      {"component": "props.pointerEvents (RNW)", "issue": "Pre-existing deprecation warning from react-native-reanimated/expo internals. Reference: console log on initial load. Non-blocking."}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_citypulse_api.py",
+    "/app/backend/tests/test_citypulse_iter2.py",
+    "/app/backend/tests/test_citypulse_iter3.py",
+    "/app/test_reports/pytest/iter3_results.xml"
+  ],
+  "action_items": [
+    "Fix planner 'cadeau' Bouquet slot: either increase fleuriste duration_min from 20 to >=30 in data.py (3 fleuriste places), or in planner.py relax the `stay < 0.5` filter to `< 0.3` when slot == 'cadeau'. Additionally change planner.py:223 fallback to use SLOT_LABELS.get(slot, 'Temps libre') so the slot still reads 'Bouquet' even when free."
+  ],
+  "critical_code_review_comments": [
+    "planner.py:162 min-stay filter (0.5h) silently drops any place with duration_min < 30, which affects the newly added fleuristes (20 min) and makes the Bouquet feature unreachable despite the slot being allocated.",
+    "planner.py:223 free-step fallback hardcodes slot_label='Temps libre' discarding the semantic slot label; prefer SLOT_LABELS[slot] so Bouquet/Déjeuner remain informative.",
+    "server.py chat prompt still uses model 'claude-sonnet-5-5' (works via emergent LLM key); response time ~8-12s per call — may require a loader state on frontend for UX (already handled via chat-typing)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_citypulse_iter3.py (new, 15 tests covering places count/addresses/categories/couple, René greeting adult+minor, chat fastfood+minor safety, history CRUD, planner Bouquet+fastfood, regression)"
+  ],
+  "success_rate": {"backend": "100% (47/47)", "frontend": "100% (5-tab navigation, René greeting+quick actions+chat+budget+clear, Discover new filters, map 35 pins, cross-tab nav)"},
+  "seed_data_creation": "Minor users created inline via /api/auth/register + PATCH birthdate 14y ago, deleted at test end. user_test001 session (test_session_citypulse) preserved. Favorites toggled and reverted. Itineraries prefixed TEST_ and deleted.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend URL env var is EXPO_PUBLIC_BACKEND_URL. 35 places (24 iter1 + 11 iter3 NEW_PLACES); 11 fastfood, 3 fleuriste, 5 bar, 3 club. Bearer test_session_citypulse = user_test001 (adult). Minor users: register + PATCH birthdate ~14y ago. /api/rene/chat is slow (Claude ~8-12s), always use timeout>=25s. React/Expo frontend uses rene-quick-{fastfood,fleuriste,verre,club,idee,pluie} chips and chat-follow-up-N for replies. Map iframe (srcdoc) hosts 35 .pin markers inside page.frames. Known backend bug: planner 'cadeau' slot allocated but never filled with fleuriste due to duration_min=20 vs stay>=0.5 filter.",
+  "rca_of_issue": "Bouquet (cadeau) step never filled with a fleuriste. Reproduction: POST /api/planner/generate {people:2,start:'10:00',end:'22:00',budget:120+} with seeds 1..24 — every response contains a step with slot='cadeau' between 17h and 19h, but kind='free' and slot_label='Temps libre'. Trace: planner.py builds candidates for slot='cadeau' with cats=['fleuriste']; the 3 fleuriste places have duration_min=20 → stay=min(20/60, end-arrival)=0.33h; the guard `if stay < 0.5` (line 162) drops all candidates, so the branch at line 220 inserts a free step with hardcoded label 'Temps libre'. Mitigation: (a) raise fleuriste duration_min to 30-40 in data.py NEW_PLACES, OR (b) lower the min-stay filter to 0.25h just for slot in ('cadeau',), AND fix slot_label fallback at line 223 to SLOT_LABELS.get(slot, 'Temps libre') so the UI still shows 'Bouquet'."
+}

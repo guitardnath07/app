@@ -13,6 +13,7 @@ from typing import List, Optional, Dict
 from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
 import httpx
+import json
 import hashlib
 import secrets
 import bcrypt
@@ -261,7 +262,7 @@ async def update_profile(body: ProfileIn, request: Request):
 async def delete_account(request: Request):
     user = await get_user(request)
     uid = user["user_id"]
-    for coll in ("user_sessions", "favorites", "claims", "itineraries"):
+    for coll in ("user_sessions", "favorites", "claims", "itineraries", "rene_messages"):
         await db[coll].delete_many({"user_id": uid})
     await db.users.delete_one({"user_id": uid})
     return {"ok": True}
@@ -384,7 +385,8 @@ async def weather():
 
 @api.get("/places")
 async def list_places(request: Request, q: Optional[str] = None, category: Optional[str] = None,
-                      price: Optional[int] = None, open_now: bool = False, deals: bool = False):
+                      price: Optional[int] = None, open_now: bool = False, deals: bool = False,
+                      couple: bool = False):
     user = await get_user(request)
     favs = await fav_ids_for(user["user_id"])
     res = []
@@ -400,6 +402,8 @@ async def list_places(request: Request, q: Optional[str] = None, category: Optio
         if q and q.lower() not in (p["name"] + " " + p["description"] + " " + p["address"]).lower():
             continue
         if open_now and not place_is_open(p):
+            continue
+        if couple and "couple" not in p["tags"]:
             continue
         if deals and not deals_for(p["id"]):
             continue
@@ -608,6 +612,180 @@ async def stats(request: Request):
     return {"total_saved": round(total_saved, 2), "total_spent": round(total_spent, 2),
             "itineraries_count": len(its), "claims_count": claims, "favorites_count": len(favs),
             "monthly": months}
+
+
+# ---------------------------------------------------------------- René (chat assistant)
+QUICK_ACTIONS = [
+    {"id": "fastfood", "label": "Trouver un fast-food ouvert", "icon": "fast-food-outline", "adult": False},
+    {"id": "fleuriste", "label": "Trouver un fleuriste à proximité", "icon": "flower-outline", "adult": False},
+    {"id": "verre", "label": "Où boire un verre ce soir ?", "icon": "wine-outline", "adult": True},
+    {"id": "club", "label": "Trouver une boîte de nuit", "icon": "musical-notes-outline", "adult": True},
+    {"id": "idee", "label": "Propose-moi une idée de sortie pour ce soir selon mon budget", "icon": "bulb-outline", "adult": False},
+    {"id": "pluie", "label": "Que faire par temps de pluie ?", "icon": "umbrella-outline", "adult": False},
+]
+MINOR_ACTION = {"id": "aprem", "label": "Une activité sympa cet après-midi", "icon": "bicycle-outline", "adult": False}
+
+
+def allowed_places(user):
+    minor = is_minor(user)
+    return [p for p in PLACES if not (minor and p["category"] in ADULT_CATEGORIES)]
+
+
+def action_candidates(action: Optional[str], user, budget: float):
+    ps = allowed_places(user)
+    is_open = lambda p: place_is_open(p)
+    if action == "fastfood":
+        c = [p for p in ps if p["category"] == "fastfood" and is_open(p)] or [p for p in ps if p["category"] == "fastfood"]
+    elif action == "fleuriste":
+        c = [p for p in ps if p["category"] == "fleuriste"]
+    elif action == "verre":
+        c = [p for p in ps if p["category"] == "bar"]
+    elif action == "club":
+        c = [p for p in ps if p["category"] == "club"]
+    elif action == "pluie":
+        c = [p for p in ps if p["indoor"] and p["category"] in ("culture", "loisirs", "commerce", "resto")]
+    elif action in ("idee", "aprem"):
+        c = [p for p in ps if p["avg_price"] <= max(budget, 5)]
+    else:
+        c = ps
+    return sorted(c, key=lambda p: (-len(deals_for(p["id"])), -p["rating"]))
+
+
+def compact(p):
+    ds = deals_for(p["id"])
+    return (f"{p['id']} | {p['name']} | {p['category']} | ~{p['avg_price']}€/pers | note {p['rating']} | "
+            f"{'ouvert' if place_is_open(p) else 'fermé'} ({fmt_hours(p['hours'][now_local().weekday()])}) | "
+            f"{p['address']}" + (f" | bon plan: {ds[0]['title']}" if ds else ""))
+
+
+class ReneIn(BaseModel):
+    message: str = Field(min_length=1, max_length=600)
+    budget: float = 30
+    action_id: Optional[str] = None
+
+
+async def rene_out(doc: dict, favs) -> dict:
+    return {"id": doc["id"], "role": doc["role"], "text": doc["text"], "created_at": doc["created_at"],
+            "follow_ups": doc.get("follow_ups") or [],
+            "places": [place_out(PLACES_BY_ID[i], favs) for i in doc.get("place_ids") or [] if i in PLACES_BY_ID]}
+
+
+@api.get("/rene/greeting")
+async def rene_greeting(request: Request, budget: float = 30):
+    user = await get_user(request)
+    minor = is_minor(user)
+    h = now_local().hour
+    w = (await weather())["condition"]
+    name = user.get("first_name") or (user.get("name") or "").split(" ")[0]
+    ps = allowed_places(user)
+    if w == "rain":
+        text, pick = "Il pleut sur Tours : voici des sorties bien au sec.", [p for p in ps if p["indoor"] and p["category"] in ("culture", "loisirs")]
+    elif 11 <= h < 14:
+        text, pick = "Un petit creux ? Voici les meilleures offres fast-food du coin.", [p for p in ps if p["category"] == "fastfood"]
+    elif 14 <= h < 17:
+        text, pick = "Après-midi libre ? Quelques idées culture et détente à petit prix.", [p for p in ps if p["category"] in ("culture", "loisirs")]
+    elif 17 <= h < 21 and not minor:
+        text, pick = "C'est l'heure de l'apéro ! Les happy hours du moment :", [p for p in ps if p["category"] == "bar"]
+    elif h >= 21 or h < 5:
+        text, pick = ("La nuit commence : clubs et bars ouverts près de vous." if not minor else
+                      "Envie de grignoter ce soir ? Les fast-foods encore ouverts :"), \
+            [p for p in ps if p["category"] in (("club", "bar") if not minor else ("fastfood",))]
+    elif 17 <= h < 21:
+        text, pick = "Fin de journée : un fast-food ou une activité avant de rentrer ?", [p for p in ps if p["category"] in ("fastfood", "loisirs")]
+    else:
+        text, pick = "Bonne journée ! Commencez par un café gourmand ou un musée.", [p for p in ps if p["category"] in ("commerce", "culture")]
+    pick = [p for p in pick if p["avg_price"] <= max(budget, 5)] or pick
+    pick.sort(key=lambda p: (not place_is_open(p), -len(deals_for(p["id"])), -p["rating"]))
+    favs = await fav_ids_for(user["user_id"])
+    actions = [a for a in QUICK_ACTIONS if not (minor and a["adult"])]
+    if minor:
+        actions.insert(2, MINOR_ACTION)
+    return {"greeting": f"Salut {name} ! Moi c'est René, ton assistant de sortie.", "suggestion": text,
+            "places": [place_out(p, favs) for p in pick[:4]],
+            "quick_actions": [{k: a[k] for k in ("id", "label", "icon")} for a in actions]}
+
+
+@api.get("/rene/history")
+async def rene_history(request: Request):
+    user = await get_user(request)
+    docs = await db.rene_messages.find({"user_id": user["user_id"]}, {"_id": 0}).sort("created_at", -1).to_list(40)
+    favs = await fav_ids_for(user["user_id"])
+    return [await rene_out(d, favs) for d in reversed(docs)]
+
+
+@api.delete("/rene/history")
+async def rene_clear(request: Request):
+    user = await get_user(request)
+    await db.rene_messages.delete_many({"user_id": user["user_id"]})
+    return {"ok": True}
+
+
+@api.post("/rene/chat")
+async def rene_chat(body: ReneIn, request: Request):
+    user = await get_user(request)
+    uid = user["user_id"]
+    age = compute_age(user.get("birthdate"))
+    grp = age_group(age)
+    prefs = user.get("preferences") or {}
+    cands = action_candidates(body.action_id, user, body.budget)
+    allowed_ids = {p["id"] for p in allowed_places(user)}
+    hist = await db.rene_messages.find({"user_id": uid}, {"_id": 0}).sort("created_at", -1).to_list(8)
+    hist_txt = "\n".join(f"{'Utilisateur' if m['role'] == 'user' else 'René'}: {m['text']}" for m in reversed(hist))
+    w = await weather()
+    n = now_local()
+    days = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
+    listing = "\n".join(compact(p) for p in (cands[:14] if body.action_id else cands))
+    prompt = (
+        f"Contexte: {days[n.weekday()]} {n.strftime('%H:%M')} à Tours, météo {w['label']} {w['temp_c']}°C.\n"
+        f"Utilisateur: {user.get('first_name') or user.get('name')}, {age if age is not None else '?'} ans "
+        f"({AGE_LABEL.get(grp, 'adulte')}), budget {body.budget:.0f}€ par personne. "
+        f"Intérêts: {', '.join(prefs.get('interests') or []) or '-'}; musique: {', '.join(prefs.get('music') or []) or '-'}; "
+        f"régime: {', '.join(prefs.get('diet') or []) or '-'}.\n"
+        f"Lieux disponibles (id | nom | catégorie | prix | note | statut | adresse | bon plan):\n{listing}\n\n"
+        f"Historique récent:\n{hist_txt or '(aucun)'}\n\nMessage: {body.message}\n\n"
+        "Réponds UNIQUEMENT avec un JSON valide, sans markdown: "
+        '{"reply": "réponse en français, tutoiement, chaleureuse, max 70 mots, cite les noms des lieux et bons plans, respecte le budget", '
+        '"place_ids": ["1 à 3 ids exacts de la liste"], "follow_ups": ["2 ou 3 relances courtes (max 6 mots)"]}'
+        + (" L'utilisateur est mineur: jamais d'alcool, de bar ni de boîte de nuit; propose une alternative adaptée." if grp == "minor" else "")
+    )
+    now_iso = datetime.now(timezone.utc).isoformat()
+    user_doc = {"id": uuid.uuid4().hex, "user_id": uid, "role": "user", "text": body.message.strip(), "created_at": now_iso}
+    await db.rene_messages.insert_one(dict(user_doc))
+
+    reply, ids, follow = None, [], []
+    try:
+        chat = LlmChat(api_key=EMERGENT_LLM_KEY, session_id=f"rene-{uuid.uuid4().hex[:8]}",
+                       system_message="Tu es René, assistant de sortie local à Tours. Concis, concret, bienveillant."
+                       ).with_model("anthropic", "claude-sonnet-5-5")
+
+        async def run():
+            t = ""
+            async for ev in chat.stream_message(UserMessage(text=prompt)):
+                if isinstance(ev, TextDelta):
+                    t += ev.content
+                elif isinstance(ev, StreamDone):
+                    break
+            return t
+
+        raw = await asyncio.wait_for(run(), timeout=30)
+        raw = raw[raw.find("{"): raw.rfind("}") + 1]
+        data = json.loads(raw)
+        reply = str(data.get("reply") or "").strip()
+        ids = [i for i in data.get("place_ids") or [] if i in allowed_ids][:3]
+        follow = [str(f)[:60] for f in (data.get("follow_ups") or [])][:3]
+    except Exception as e:
+        logger.warning(f"René failed: {e}")
+    if not reply:
+        top = cands[:3]
+        ids = [p["id"] for p in top]
+        reply = ("Voici ce que je te propose : " + ", ".join(p["name"] for p in top) + ".") if top else \
+            "Je n'ai rien trouvé qui corresponde, essaie une autre idée !"
+        follow = ["Autre idée ?", "Moins cher ?"]
+    bot_doc = {"id": uuid.uuid4().hex, "user_id": uid, "role": "assistant", "text": reply, "place_ids": ids,
+               "follow_ups": follow, "created_at": datetime.now(timezone.utc).isoformat()}
+    await db.rene_messages.insert_one(dict(bot_doc))
+    favs = await fav_ids_for(uid)
+    return {"user": await rene_out(user_doc, favs), "assistant": await rene_out(bot_doc, favs)}
 
 
 @api.get("/me/finance")

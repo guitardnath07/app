@@ -26,6 +26,13 @@ App mobile "CityPulse" : assistant intelligent de sorties, bons plans et organis
 - Age-based recommendations: minors exclude bars/clubs/alcohol offers & night slots; young boost; senior calm
 - Tests: backend 32/32, frontend flows OK (iteration_2)
 
+## Iteration 3 (2026-06)
+- 5 tabs: René (AI chatbot, default), Découvrir, Promos, Organiser, Compte
+- René: proactive greeting by hour/weather, 6 quick actions (age-aware), Claude chat with place cards + follow-ups, budget pill, history
+- Data: 35 places with full postal addresses; fast-foods (McDonald's, BK, KFC, Five Guys, O'Tacos, Berliner, Pitaya, Sushi Shop, Poke House, Domino's, Subway), more bars/clubs, fleuristes; Couple filter; planner bouquet step for couples + fast-food meals
+- Map: distinct marker per category, address in popup
+- Tests: 47/47 backend, frontend OK (iteration_3)
+
 ## Backlog
 - P1: partage d'itinéraire, réservation, date future de sortie dans le planner
 - P1: vraie carte (react-native-maps en build natif), géolocalisation
