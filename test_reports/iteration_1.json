@@ -1,0 +1,32 @@
+{
+  "summary": "CityPulse full-stack testing complete. Backend: 21/21 pytest cases pass covering auth, places, deals, favorites, planner (with/without AI, pinned/excludes, budget invariant, chronological steps), itineraries CRUD, stats and weather. Frontend (390x844 mobile viewport): login screen -> seeded token flow works; Discover screen loads 16 places, search ('chocolat' -> 1 result), category chip filter, list/map toggle (16 map pins) and place detail + favorite toggle verified; Deals screen loads, flash filter + QR sheet shows a CP-XXXX code (deal-qr-code-value); braderie deal correctly shows NO QR (qr_count=0); Planner generates results with AI title ('Tours gourmande/douceur et gourmandise...'), economics card (coût total/plein/bons plans/reste), chronological timeline, swap button changes step 0 (Chocolatière -> Beaux-Arts), régénérer and enregistrer work; saved itinerary appears in Carnet de voyage, detail opens with timeline; Profile stats reflect saved data (8,80 € économisé, 1 journée, 1 QR promo), monthly chart renders, theme switch toggles, logout returns to login. No deprecated Expo packages detected (expo-av/expo-barcode-scanner/expo-background-fetch not used). One benign React Native web warning: 'props.pointerEvents is deprecated. Use style.pointerEvents'.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": [
+      {"component": "props.pointerEvents", "issue": "React Native web deprecation warning 'props.pointerEvents is deprecated. Use style.pointerEvents'. Likely from an internal lib (reanimated/expo). Non-blocking but worth tracking."}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_citypulse_api.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "Optional: silence 'props.pointerEvents is deprecated' warning by moving pointerEvents to style on any custom component (grep usage).",
+    "Note that logout deletes the Mongo session; re-seed test_session_citypulse before next automated run (handled during this run)."
+  ],
+  "critical_code_review_comments": [
+    "server.py @app.on_event is deprecated in FastAPI 0.11x+ — consider migrating to lifespan handlers.",
+    "Pydantic schema: PlanIn.excludes uses dict[str, List[str]] with str keys that are later int-converted — fine, but worth validating in model.",
+    "ai_tips() uses hardcoded fallback — good; AI path with 25s timeout works and p95 ~5-8s."
+  ],
+  "updated_files": [
+    "/app/backend/tests/__init__.py (created)",
+    "/app/backend/tests/test_citypulse_api.py (created, 21 tests)"
+  ],
+  "success_rate": {"backend": "100%", "frontend": "100% (all flows validated across runs; Metro web-preview occasional disconnects required re-runs but did not surface functional defects)"},
+  "seed_data_creation": "Re-seeded user_sessions upsert for session_token=test_session_citypulse after logout test. Cleaned up TEST_ itineraries, claims and favorites at end of run.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Use Bearer test_session_citypulse (user_test001). Frontend env uses EXPO_PUBLIC_BACKEND_URL (not EXPO_BACKEND_URL) -> https://day-planner-243.preview.emergentagent.com. localStorage key cp_session_token JSON-stringified. Logout test deletes session in DB — upsert mongosh user_sessions with expires_at future before next run. Tab labels: 'Découvrir', 'Bons plans', 'Organiser' (not 'Organisateur'), 'Profil'. Prefer URL navigation (/deals, /planner, /journal, /profile) over clicking text labels to avoid conflict with filter chip 'Bons plans'.",
+  "rca_of_issue": "None — no defects. Minor automation friction only (Metro web preview occasionally disconnects causing selector timeouts; worked around with URL navigation + longer waits)."
+}

@@ -1,0 +1,187 @@
+{
+  "app_name": "CityPulse",
+  "personality": "1 iOS-Native Clean (Forced Dark Mode)",
+  "personality_one_liner": "Un guide urbain sombre, élégant et immersif (style Airbnb x Citymapper), privilégiant la clarté, de grandes images et des animations fluides.",
+  "color": {
+    "surface": "#0F0F0F",
+    "onSurface": "#F2F2F2",
+    "surfaceSecondary": "#1C1C1C",
+    "onSurfaceSecondary": "#FFFFFF",
+    "surfaceTertiary": "#2C2C2C",
+    "onSurfaceTertiary": "#E0E0E0",
+    "surfaceInverse": "#FFFFFF",
+    "onSurfaceInverse": "#0F0F0F",
+    "brand": "#E27443",
+    "brandPrimary": "#E27443",
+    "onBrandPrimary": "#FFFFFF",
+    "brandSecondary": "#F4B376",
+    "onBrandSecondary": "#1A1A1A",
+    "brandTertiary": "#432616",
+    "onBrandTertiary": "#F4B376",
+    "success": "#34C759",
+    "onSuccess": "#000000",
+    "warning": "#F5A623",
+    "onWarning": "#000000",
+    "error": "#FF3B30",
+    "onError": "#FFFFFF",
+    "info": "#64D2FF",
+    "onInfo": "#000000",
+    "border": "#2C2C2C",
+    "borderStrong": "#4A4A4A",
+    "divider": "#2C2C2C",
+    "muted": "#8E8E93",
+    "onBrand": "#FFFFFF"
+  },
+  "typography": {
+    "displayFontFamily": "Geist",
+    "textFontFamily": "Geist",
+    "scale": {
+      "sm": 12,
+      "base": 14,
+      "lg": 16,
+      "xl": 20,
+      "2xl": 24
+    }
+  },
+  "spacing": {
+    "rule": "Generous vertical rhythm for breathing room, standard 16px lateral padding. Group related items with 8px, separate distinct blocks with 24px.",
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 24,
+    "2xl": 32,
+    "3xl": 48
+  },
+  "radius_tokens": {
+    "sm": 6,
+    "md": 12,
+    "lg": 20,
+    "pill": 999
+  },
+  "shadow_tier": 0,
+  "navigation": "bottom_tabs",
+  "icon_set": "Phosphor",
+  "glassmorphism": {
+    "enabled": true,
+    "do's": [
+      "Use heavily tinted glass (surfaceSecondary at 70% + blur) for floating headers, bottom sheets, and the tab bar.",
+      "Apply glassmorphism to floating 'Map' vs 'List' toggle buttons.",
+      "Use glass overlays on featured image cards for text readability."
+    ],
+    "dont's": [
+      "Never use glass on standard input fields or normal list rows.",
+      "Avoid stacking more than two glass surfaces."
+    ]
+  },
+  "platform_libraries": {
+    "glass": {
+      "ios": "expo-glass-effect",
+      "android": "expo-blur",
+      "low_end_android_fallback": "solid surfaceSecondary"
+    },
+    "image": "expo-image",
+    "blur": "expo-blur",
+    "bottom_sheet": "@gorhom/bottom-sheet",
+    "animation": "react-native-reanimated",
+    "gesture": "react-native-gesture-handler"
+  },
+  "screens": [
+    {
+      "name": "Auth",
+      "purpose": "Google login screen with a cinematic background.",
+      "states": {
+        "loading": "Centered brand-colored spinner.",
+        "empty": "N/A",
+        "error": "Standard error toast."
+      },
+      "layout": "Full-bleed background image with vertical gradient scrim (transparent to surface). Large typography logo at the top. Google login button floating in the bottom third."
+    },
+    {
+      "name": "Discover (Découvrir)",
+      "purpose": "Main feed for places and active deals with powerful filtering.",
+      "states": {
+        "loading": "Skeleton cards mimicking the layout.",
+        "empty": "Illustration indicating no places match the filters, with a CTA to clear filters.",
+        "error": "Error message with a 'Réessayer' button."
+      },
+      "layout": "Sticky glass header containing search and a scrollable row of pill-shaped category filters. Main content is a vertical list of large, Airbnb-style image-led cards. Each card has a vertical gradient scrim, title, rating, and distance. Floating pill at the bottom center toggles between 'List' and 'Carte' views."
+    },
+    {
+      "name": "Place Detail (Fiche Lieu)",
+      "purpose": "Immersive view of a location, its details, and specific deals.",
+      "states": {
+        "loading": "Skeleton UI over the image area.",
+        "empty": "N/A",
+        "error": "Failed to load place details, back button available."
+      },
+      "layout": "Parallax hero image stretching behind a transparent header (turns to glass on scroll). Content below is contained in a surface-colored sheet that slides up over the image. Key sections: Info rows (horaires, rating), a 'Bons plans' callout card (brandTertiary bg), and transportation hints."
+    },
+    {
+      "name": "Deals (Bons Plans)",
+      "purpose": "Hub for current discounts, flash sales, and QR promos.",
+      "states": {
+        "loading": "Skeleton list rows.",
+        "empty": "Friendly 'Aucun bon plan pour le moment' state with abstract icon.",
+        "error": "Failed to load deals."
+      },
+      "layout": "Carousel of top 'Ventes Flash' at the top, followed by a grid or stacked list of standard deals. Tapping a deal opens a Bottom Sheet (Gorhom) presenting the QR Code prominently (on a surfaceInverse background for scanability)."
+    },
+    {
+      "name": "AI Organizer (Organisateur IA)",
+      "purpose": "AI-generated day timeline based on user inputs.",
+      "states": {
+        "loading": "Lottie/Animated abstract metallic gradient indicating AI is 'thinking'.",
+        "empty": "Input form to generate a plan (budget, people, time, interests).",
+        "error": "Failed to generate plan, retry button."
+      },
+      "layout": "Form state: Clean, single-column inputs with a sticky 'Générer' button. Result state: Citymapper-style vertical timeline. Each node is a place or activity, connected by a vertical line. Transit sections between nodes show time/mode. A sticky summary bar at the bottom shows total cost vs budget."
+    },
+    {
+      "name": "Profile & Budget",
+      "purpose": "User settings, saved places, and monthly savings dashboard.",
+      "states": {
+        "loading": "Skeleton text blocks.",
+        "empty": "No saved places or data yet.",
+        "error": "Could not load profile."
+      },
+      "layout": "Top section features the user profile and a sleek dashboard card highlighting 'Total économisé' with a subtle chart/bar. Below are list rows (iOS standard layout with trailing chevrons) for 'Carnet de voyage', 'Favoris', and 'Préférences'."
+    }
+  ],
+  "images": {
+    "auth_bg": {
+      "url": "https://images.unsplash.com/photo-1541371301799-86ad7e6e44cd?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjd8MHwxfHNlYXJjaHwxfHxUb3VycyUyMEZyYW5jZSUyMGNpdHklMjBjZW50ZXIlMjBhcmNoaXRlY3R1cmV8ZW58MHx8fHwxNzkxMzYyNTIzfDA&ixlib=rb-4.1.0&q=85",
+      "alt": "Tours city center architecture"
+    },
+    "place_bar": {
+      "url": "https://images.unsplash.com/photo-1709548145082-04d0cde481d4?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzR8MHwxfHNlYXJjaHwxfHxkYXJrJTIwYXRtb3NwaGVyaWMlMjBjb2NrdGFpbCUyMGJhciUyMGludGVyaW9yfGVufDB8fHx8MTc5MTM2MjUyM3ww&ixlib=rb-4.1.0&q=85",
+      "alt": "Dark atmospheric cocktail bar interior"
+    },
+    "place_restaurant": {
+      "url": "https://images.unsplash.com/photo-1519077336050-4ca5cac9d64f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MDZ8MHwxfHNlYXJjaHwyfHxnb3VybWV0JTIwcmVzdGF1cmFudCUyMGZvb2QlMjBwbGF0aW5nJTIwZGFyayUyMG1vb2R8ZW58MHx8fHwxNzkxMzYyNTIzfDA&ixlib=rb-4.1.0&q=85",
+      "alt": "Gourmet restaurant food plating"
+    },
+    "ai_loading_bg": {
+      "url": "https://images.unsplash.com/photo-1687392946855-8e35efa25ad7?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzl8MHwxfHNlYXJjaHwxfHxhYnN0cmFjdCUyMG1ldGFsbGljJTIwZ3JhZGllbnQlMjBkYXJrJTIwb3JhbmdlJTIwbW9kZXJuJTIwcGF0dGVybnxlbnwwfHx8fDE3OTEzNjI1Mjl8MA&ixlib=rb-4.1.0&q=85",
+      "alt": "Abstract dark orange modern pattern for AI states"
+    },
+    "promo_abstract": {
+      "url": "https://images.unsplash.com/photo-1634834300387-8015d9fb7550?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzR8MHwxfHNlYXJjaHwxfHxxciUyMGNvZGUlMjBuZW9uJTIwb3JhbmdlJTIwZnV0dXJpc3RpYyUyMHNjYW58ZW58MHx8fHwxNzkxMzYyNTI5fDA&ixlib=rb-4.1.0&q=85",
+      "alt": "Futuristic neon orange tunnel representing digital deals"
+    },
+    "map_mockup": {
+      "url": "https://images.unsplash.com/photo-1544411047-c491e34a24e0?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2OTF8MHwxfHNlYXJjaHwxfHxjaXR5JTIwbWFwJTIwZGFyayUyMG1vZGUlMjBhYnN0cmFjdCUyMGdsb3dpbmclMjBsaW5lc3xlbnwwfHx8fDE3OTEzNjI1Mjl8MA&ixlib=rb-4.1.0&q=85",
+      "alt": "Abstract glowing dark mode city map"
+    }
+  },
+  "instructions_to_main_agent": [
+    "Design strictly in DARK MODE. Use the defined surface (#0F0F0F) and surfaceSecondary (#1C1C1C) to maintain a modern, sober aesthetic without being purely black.",
+    "Implement Airbnb-style large image cards in the 'Discover' feed. MUST include a vertical gradient scrim (transparent to surfaceInverse) at the bottom of these images to ensure the overlaid white text is readable.",
+    "For the 'Carte' (Map) view, since react-native-maps is excluded, use the 'map_mockup' background image wrapped in a pinch-to-zoom container, placing stylized Glassmorphic location pins over it.",
+    "The AI Organizer timeline MUST follow the Mobbin-researched Citymapper structural pattern: A stacked vertical list connecting nodes (places) with lines, and explicitly showing transit details (time, cost) between nodes.",
+    "Bottom Tab Bar should use glassmorphism (expo-blur) floating slightly or anchored at the bottom with a translucent background.",
+    "Ensure 'Bons plans' (Deals) QR codes are displayed on a white or light background (surfaceInverse) within a modal or bottom sheet so scanners can easily read them despite the app being dark mode.",
+    "In the AI input form, keep labels above inputs and pin the 'Générer' CTA firmly at the bottom using KeyboardAvoidingView.",
+    "Never use Indigo, Blue, or Purple. Rely on the 'brand' Terracotta/Ochre token for accents, calls to action, and discount badges."
+  ]
+}
