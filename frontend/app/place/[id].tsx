@@ -72,7 +72,7 @@ export default function PlaceDetail() {
         </View>
       ) : q.isError || !p ? (
         <View style={{ paddingTop: insets.top + 60 }}>
-          <EmptyState icon="alert-circle-outline" title="Lieu introuvable" testID="place-error"
+          <EmptyState icon={(q.error as any)?.status === 403 ? "shield-outline" : "alert-circle-outline"} title={(q.error as any)?.status === 403 ? "Lieu réservé aux personnes majeures" : "Lieu introuvable"} testID="place-error"
             action={<Button label="Retour" variant="secondary" onPress={() => router.back()} testID="place-error-back" />} />
         </View>
       ) : (

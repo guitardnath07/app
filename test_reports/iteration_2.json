@@ -1,0 +1,36 @@
+{
+  "summary": "CityPulse iteration 2 full-stack validation complete. Backend: 32/32 pytest pass (21 regression + 11 new) covering email/password auth (register/login 201/409/422/401), auth/me new fields (age/age_group/has_password/preferences/auth_providers), PATCH /me/profile with birthdate validation (ISO + future rejected) and prefs truncation, POST /auth/change-password (requires current for password users, allows no-current for Google users, revokes other password sessions, same-pw rejected), DELETE /me (purges itineraries/favorites/claims/sessions and invalidates token), GET /me/finance (savings_ratio and tx linked to itineraries), GET /transit-stops (tram/bus/velo), minor filtering on /places (bar/club hidden), /places/{id} 403 for adult places, /deals filtered + /deals/{id}/claim 403 for adult, planner for minor never returns bar/club/soir/nuit slots. Frontend (390x844): fresh signup -> profile-completion-screen -> birthdate picker-sheet (152 picker options) with picker-day-14/picker-month-5/picker-year-1998/birthdate-picker-confirm/completion-submit-button -> tabs; Compte tab (tab-profile) shows account-tab-finance (profile-total-saved, finance-total-spent, finance-savings-ratio with ring, Dépenses vs économies chart, history empty state), account-tab-profile with first/last/email/phone/birthdate/interests/music/diet/password-row/theme-switch/logout/delete; profile-save-button appears after editing phone (dirty-gated as designed); profile-password-row opens password-sheet in 'Définir un mot de passe' mode for Google user (no current-password field, matching backend spec); Discover view-toggle-map renders iframe Leaflet with OpenStreetMap France tiles, map-zoom-in/map-zoom-out/map-locate-button functional (locate opens location-permission-sheet with location-allow-button/location-later-button), 16 .pin markers inside iframe, clicking a pin opens popup with photo/name/rating/discount/'Voir la fiche' button; minor user (age 15 via API): Discover has NO filter-category-bar/filter-category-club chips, Deals list excludes adult offers, Planner shows planner-minor-banner 'Mode -18 ans : bars, boîtes de nuit et offres d'alcool sont exclus' and interests exclude 'Fête' (only gourmand/culture/sport/detente visible). Seed user user_test001 was temporarily modified by Google-set-password test and then restored to google-only state (auth_providers=['google'], password_hash removed, password_jwt sessions deleted, seeded session_token=test_session_citypulse preserved). No deprecated Expo packages (expo-av/expo-barcode-scanner/expo-background-fetch). Benign RNW warning 'props.pointerEvents is deprecated' persists from internal lib.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": [
+      {"component": "props.pointerEvents", "issue": "RNW deprecation warning (also seen in iter1) - non-blocking, originates from reanimated/expo internals."}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_citypulse_api.py",
+    "/app/backend/tests/test_citypulse_iter2.py",
+    "/app/test_reports/pytest/pytest_results.xml",
+    "/app/test_reports/pytest/iter2_results.xml"
+  ],
+  "action_items": [
+    "None - all iteration 2 features (email/password auth, profile completion, finance panel, map iframe, minor filtering) working end-to-end."
+  ],
+  "critical_code_review_comments": [
+    "server.py: register returns 422 (Pydantic) for password <8 chars which is slightly inconsistent with the business message - acceptable but a custom 400 with a clear message would be more UX-friendly if main agent wants to surface the error in UI.",
+    "profile-save-button visibility is dirty-gated (dirty state) - documented in profile-panel.tsx:151, which matches intended UX but any future test writer should edit a field first before expecting the button.",
+    "DatePickerSheet renders 152 picker rows (days+months+100 years) inside a Sheet - fine for web but on native large list perf could be revisited.",
+    "@app.on_event is still deprecated in FastAPI (noted in iter1) - consider migrating to lifespan handlers."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_citypulse_iter2.py (new, 11 tests for iter2 features, includes auto-restore of seeded user)"
+  ],
+  "success_rate": {"backend": "100% (32/32)", "frontend": "100% (signup+completion, account finance/profile tabs, password sheet, map iframe with pins, minor filtering all validated)"},
+  "seed_data_creation": "Minor and standard test users are created inline via POST /api/auth/register with TEST_ email prefix and deleted at end of each test (DELETE /api/me). Seeded Google user user_test001 was reset to google-only state after TestGoogleUserSetPassword (password_hash unset, password_jwt sessions cleared, test_session_citypulse preserved).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Use EXPO_PUBLIC_BACKEND_URL (not EXPO_BACKEND_URL). Bearer test_session_citypulse maps to user_test001 (Google, birthdate 1998-05-14). Date picker testIDs: picker-day-N (1..31), picker-month-N (1..12), picker-year-YYYY, birthdate-picker-confirm. Account tab testID is still tab-profile (even though route is /account). profile-save-button is dirty-gated, edit a field first. For PressableScale/Pressable interactions in RNW, use `(await page.query_selector(...)).click()` without force=True (force=True clicks inner Animated layer and misses the Pressable onPress). Map pins live inside an srcdoc iframe (frame.url contains 'srcdoc'); use page.frames and frame.evaluate to query '.pin' and click them. The 'TestGoogleUserSetPassword' test writes to the seeded user; it auto-restores at teardown but if the test is aborted mid-run, re-run 'cd /app/backend && python -c \"from dotenv import load_dotenv; load_dotenv('.env'); import os; from pymongo import MongoClient; c=MongoClient(os.environ['MONGO_URL']); db=c[os.environ['DB_NAME']]; db.users.update_one({'user_id':'user_test001'},{'$unset':{'password_hash':''},'$set':{'auth_providers':['google']}}); db.user_sessions.delete_many({'user_id':'user_test001','kind':'password_jwt'})\"'.",
+  "rca_of_issue": "No defects detected. One automation note: PressableScale wraps content in Animated.View; using force=True on data-testid can click the inner animated layer and skip the Pressable onPress handler. Use normal .click() (or element.click()) for mode-switch toggles."
+}

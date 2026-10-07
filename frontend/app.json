@@ -9,14 +9,21 @@
     "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.emergent.dayplanner.hcqe1i"
+      "bundleIdentifier": "com.emergent.dayplanner.hcqe1i",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Voir les bons plans autour de vous sur la carte"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#000000"
       },
-      "package": "com.emergent.dayplanner.hcqe1i"
+      "package": "com.emergent.dayplanner.hcqe1i",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -39,7 +46,13 @@
       "expo-secure-store",
       "expo-web-browser",
       "expo-status-bar",
-      "@react-native-vector-icons/ionicons"
+      "@react-native-vector-icons/ionicons",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Voir les bons plans autour de vous sur la carte"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

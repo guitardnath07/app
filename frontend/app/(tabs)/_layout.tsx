@@ -25,9 +25,9 @@ export default function TabsLayout() {
           <NativeTabs.Trigger.Icon sf="sparkles" />
           <NativeTabs.Trigger.Label>Organiser</NativeTabs.Trigger.Label>
         </NativeTabs.Trigger>
-        <NativeTabs.Trigger name="profile">
+        <NativeTabs.Trigger name="account">
           <NativeTabs.Trigger.Icon sf="person.crop.circle.fill" />
-          <NativeTabs.Trigger.Label>Profil</NativeTabs.Trigger.Label>
+          <NativeTabs.Trigger.Label>Compte</NativeTabs.Trigger.Label>
         </NativeTabs.Trigger>
       </NativeTabs>
     );
@@ -58,7 +58,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="index" options={{ title: "Découvrir", tabBarButtonTestID: "tab-discover", tabBarIcon: icon("compass", "compass-outline") }} />
       <Tabs.Screen name="deals" options={{ title: "Bons plans", tabBarButtonTestID: "tab-deals", tabBarIcon: icon("pricetags", "pricetags-outline") }} />
       <Tabs.Screen name="planner" options={{ title: "Organiser", tabBarButtonTestID: "tab-planner", tabBarIcon: icon("sparkles", "sparkles-outline") }} />
-      <Tabs.Screen name="profile" options={{ title: "Profil", tabBarButtonTestID: "tab-profile", tabBarIcon: icon("person-circle", "person-circle-outline") }} />
+      <Tabs.Screen name="account" options={{ title: "Compte", tabBarButtonTestID: "tab-profile", tabBarIcon: icon("person-circle", "person-circle-outline") }} />
     </Tabs>
   );
 }

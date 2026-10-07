@@ -3,7 +3,7 @@ import math
 import random
 from datetime import datetime, timezone
 
-from data import PLACES, DEALS
+from data import PLACES, DEALS, ADULT_CATEGORIES
 
 ORIGIN = {"name": "Place Jean Jaurès", "lat": 47.3905, "lng": 0.6890}
 PLACES_BY_ID = {p["id"]: p for p in PLACES}
@@ -117,6 +117,8 @@ def build_plan(params: dict) -> dict:
     excludes = {int(k): set(v) for k, v in (params.get("excludes") or {}).items()}
     rng = random.Random(params.get("seed", 1))
     weekday = datetime.now().weekday()
+    group = params.get("age_group") or "unknown"
+    minor = group == "minor"
 
     t = start
     prev = ORIGIN
@@ -134,9 +136,9 @@ def build_plan(params: dict) -> dict:
             slot = "dejeuner"
         elif not dinner_done and t >= 19:
             slot = "diner"
-        elif t >= 22.5 and "fete" in interests and not club_done:
+        elif t >= 22.5 and "fete" in interests and not club_done and not minor and group != "senior":
             slot = "nuit"
-        elif t >= 21 or (t >= 17.5 and "fete" in interests):
+        elif not minor and (t >= 21 or (t >= 17.5 and "fete" in interests)):
             slot = "soiree"
         else:
             slot = "activite"
@@ -144,6 +146,8 @@ def build_plan(params: dict) -> dict:
         cats = SLOT_CATEGORIES[slot]
         candidates = []
         for p in PLACES:
+            if minor and p["category"] in ADULT_CATEGORIES:
+                continue
             if p["category"] not in cats or p["id"] in used or p["id"] in excludes.get(idx, set()):
                 continue
             if weather in ("rain", "cold") and not p["indoor"]:
@@ -168,6 +172,13 @@ def build_plan(params: dict) -> dict:
                 score += 1.5
             if deal:
                 score += 1
+            if group == "young" and (p["category"] in ADULT_CATEGORIES or "fete" in p["tags"] or p["price_level"] == 1):
+                score += 1.5
+            elif group == "senior":
+                score += 1.5 if ("detente" in p["tags"] or p["category"] == "culture") else 0
+                score -= 2 if p["category"] == "club" or (p["category"] == "loisirs" and "fete" in p["tags"]) else 0
+            elif group == "minor" and (p["category"] in ("loisirs", "culture") or "sport" in p["tags"]):
+                score += 1.5
             if slot == "activite" and p["category"] == "commerce" and not (15.5 <= t <= 17.5):
                 score -= 2
             if over_cap:
@@ -226,7 +237,7 @@ def build_plan(params: dict) -> dict:
     final_total = round(final_places + travel_total, 2)
     return {
         "params": {k: params.get(k) for k in ("budget", "people", "start", "end", "weather", "mode",
-                                               "interests", "student", "seed")},
+                                               "interests", "student", "seed", "age_group", "music", "diet")},
         "steps": steps,
         "pinned": [s["place"]["id"] if s["place"] else None for s in steps],
         "totals": {

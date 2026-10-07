@@ -459,3 +459,25 @@ def build_deals():
 
 
 DEALS = build_deals()
+
+
+TRANSIT_STOPS = [
+    {"id": "t-gare", "type": "tram", "name": "Gare de Tours", "lines": ["Tram A"], "lat": 47.3897, "lng": 0.6936},
+    {"id": "t-jaures", "type": "tram", "name": "Jean Jaurès", "lines": ["Tram A", "Bus 2", "Bus 3"], "lat": 47.3903, "lng": 0.6893},
+    {"id": "t-nationale", "type": "tram", "name": "Nationale", "lines": ["Tram A"], "lat": 47.3932, "lng": 0.6872},
+    {"id": "t-anatole", "type": "tram", "name": "Anatole France", "lines": ["Tram A"], "lat": 47.3962, "lng": 0.6878},
+    {"id": "t-choiseul", "type": "tram", "name": "Place Choiseul", "lines": ["Tram A"], "lat": 47.4008, "lng": 0.6869},
+    {"id": "t-liberte", "type": "tram", "name": "Liberté", "lines": ["Tram A"], "lat": 47.3800, "lng": 0.6905},
+    {"id": "t-2lions", "type": "tram", "name": "Fac 2 Lions", "lines": ["Tram A"], "lat": 47.3662, "lng": 0.6955},
+    {"id": "b-cathedrale", "type": "bus", "name": "Cathédrale", "lines": ["Bus 2"], "lat": 47.3953, "lng": 0.6966},
+    {"id": "b-halles", "type": "bus", "name": "Les Halles", "lines": ["Bus 3"], "lat": 47.3908, "lng": 0.6818},
+    {"id": "b-botanique", "type": "bus", "name": "Jardin Botanique", "lines": ["Bus 3"], "lat": 47.3884, "lng": 0.6737},
+    {"id": "b-wilson", "type": "bus", "name": "Pont Wilson", "lines": ["Bus 2", "Bus 4"], "lat": 47.3968, "lng": 0.6884},
+    {"id": "b-colbert", "type": "bus", "name": "Colbert", "lines": ["Bus 4"], "lat": 47.3951, "lng": 0.6900},
+    {"id": "b-grammont", "type": "bus", "name": "Grammont", "lines": ["Bus 5"], "lat": 47.3742, "lng": 0.6952},
+    {"id": "v-plum", "type": "velo", "name": "VélOcité Plumereau", "lines": ["VélOcité"], "lat": 47.3946, "lng": 0.6833},
+    {"id": "v-wilson", "type": "velo", "name": "VélOcité Pont Wilson", "lines": ["VélOcité"], "lat": 47.3976, "lng": 0.6897},
+    {"id": "v-sicard", "type": "velo", "name": "VélOcité François Sicard", "lines": ["VélOcité"], "lat": 47.3949, "lng": 0.6950},
+]
+
+ADULT_CATEGORIES = ("bar", "club")

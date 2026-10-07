@@ -10,6 +10,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "@/src/auth";
 import { ErrorBoundary } from "@/src/components/error-boundary";
 import { LoginScreen } from "@/src/components/login-screen";
+import { ProfileCompletion } from "@/src/components/profile-completion";
 import { ToastProvider } from "@/src/components/toast";
 import { Spinner } from "@/src/components/ui";
 import { queryClient } from "@/src/query-client";
@@ -36,6 +37,14 @@ function Gate() {
       <>
         <StatusBar style="light" />
         <LoginScreen />
+      </>
+    );
+  }
+  if (!user.birthdate) {
+    return (
+      <>
+        <StatusBar style={scheme === "dark" ? "light" : "dark"} />
+        <ProfileCompletion />
       </>
     );
   }

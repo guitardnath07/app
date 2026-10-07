@@ -14,6 +14,7 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { api } from "@/src/api";
+import { useAuth } from "@/src/auth";
 import { Sheet } from "@/src/components/sheet";
 import { EconomicsCard, Timeline } from "@/src/components/timeline";
 import { useToast } from "@/src/components/toast";
@@ -53,6 +54,8 @@ export default function Planner() {
   const { colors } = useTheme();
   const toast = useToast();
   const qc = useQueryClient();
+  const { user } = useAuth();
+  const minor = user?.age_group === "minor";
 
   const [budget, setBudget] = useState("60");
   const [group, setGroup] = useState<"solo" | "couple" | "groupe">("couple");
@@ -68,6 +71,11 @@ export default function Planner() {
   const [swapping, setSwapping] = useState<number | null>(null);
   const [saveOpen, setSaveOpen] = useState(false);
   const [name, setName] = useState("");
+
+  useEffect(() => {
+    if (user?.preferences?.interests?.length) setInterests(user.preferences.interests.filter((k) => !(minor && k === "fete")));
+    setStudent(user?.age_group === "young" || user?.age_group === "minor");
+  }, [user, minor]);
 
   const wq = useQuery({ queryKey: ["weather"], queryFn: () => api<{ condition: string }>("/weather") });
   useEffect(() => {
@@ -144,6 +152,7 @@ export default function Planner() {
       setName("");
       qc.invalidateQueries({ queryKey: ["itineraries"] });
       qc.invalidateQueries({ queryKey: ["stats"] });
+      qc.invalidateQueries({ queryKey: ["finance"] });
       toast("Itinéraire enregistré dans le carnet");
     },
     onError: () => toast("Enregistrement impossible", "error"),
@@ -225,6 +234,12 @@ export default function Planner() {
         <Text style={styles.title}>Ma journée parfaite</Text>
       </View>
       <KeyboardAwareScrollView bottomOffset={96} contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl, paddingBottom: bottomChrome + 120 }}>
+        {minor ? (
+          <View style={styles.minor} testID="planner-minor-banner">
+            <Ionicons name="shield-checkmark-outline" size={18} color={colors.onBrandTertiary} />
+            <Text style={styles.minorText}>Mode -18 ans : bars, boîtes de nuit et offres d&apos;alcool sont exclus de vos journées.</Text>
+          </View>
+        ) : null}
         <Section label="Budget max total">
           <View style={styles.budgetRow}>
             <TextInput
@@ -298,7 +313,7 @@ export default function Planner() {
 
         <Section label="Centres d'intérêt">
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
-            {INTERESTS.map((i) => (
+            {INTERESTS.filter((i) => !(minor && i.key === "fete")).map((i) => (
               <Chip
                 key={i.key}
                 testID={`planner-interest-${i.key}`}
@@ -459,5 +474,7 @@ const useStyles = makeStyles((c) => ({
   tips: { padding: spacing.lg, gap: spacing.md, borderRadius: radius.lg, backgroundColor: c.surfaceSecondary, borderWidth: 1, borderColor: c.border },
   tipsTitle: { fontFamily: font.semibold, fontSize: 16, color: c.onSurface },
   tipText: { flex: 1, fontFamily: font.regular, fontSize: 14, lineHeight: 20, color: c.onSurfaceTertiary },
+  minor: { flexDirection: "row", gap: spacing.sm, alignItems: "center", padding: spacing.md, borderRadius: radius.md, backgroundColor: c.brandTertiary },
+  minorText: { flex: 1, fontFamily: font.medium, fontSize: 13, color: c.onBrandTertiary },
   actionBar: { position: "absolute", left: spacing.lg, right: spacing.lg, flexDirection: "row", gap: spacing.md },
 }));

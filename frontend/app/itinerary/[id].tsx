@@ -26,6 +26,7 @@ export default function ItineraryDetail() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["itineraries"] });
       qc.invalidateQueries({ queryKey: ["stats"] });
+      qc.invalidateQueries({ queryKey: ["finance"] });
       toast("Itinéraire supprimé");
       router.back();
     },

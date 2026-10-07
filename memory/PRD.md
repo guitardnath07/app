@@ -19,6 +19,13 @@ App mobile "CityPulse" : assistant intelligent de sorties, bons plans et organis
 - Profil: total économisé, graphique mensuel, stats, carnet de voyage, favoris, thème clair/sombre
 - Tests: backend 21/21, frontend flows OK (iteration_1)
 
+## Iteration 2 (2026-06)
+- Real Leaflet map (OSM France tiles; CARTO now requires API key): scroll/pinch/double-tap zoom, drag, floating +/−/locate (expo-location with permission flow), category-colored markers, tram/bus/vélo stops, popup with "Voir la fiche"
+- Email + password auth added alongside Google (JWT hashed in user_sessions), change/set password, delete account
+- Mandatory birthdate (profile completion screen), Compte tab: Bilan financier (KPIs, ratio, monthly spent vs saved, transaction history) + Mon profil (personal info, preferences interests/music/diet, security)
+- Age-based recommendations: minors exclude bars/clubs/alcohol offers & night slots; young boost; senior calm
+- Tests: backend 32/32, frontend flows OK (iteration_2)
+
 ## Backlog
 - P1: partage d'itinéraire, réservation, date future de sortie dans le planner
 - P1: vraie carte (react-native-maps en build natif), géolocalisation

@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { api } from "@/src/api";
 import { useAuth } from "@/src/auth";
-import { CityMap } from "@/src/components/city-map";
+import { InteractiveMap } from "@/src/components/map/interactive-map";
 import { PlaceCard } from "@/src/components/place-card";
 import { Button, Chip, EmptyState, Ionicons, PressableScale, Skeleton } from "@/src/components/ui";
 import { CATEGORIES } from "@/src/constants";
@@ -85,7 +85,7 @@ export default function Discover() {
           ) : null}
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow} contentContainerStyle={styles.chipContent}>
-          {CATEGORIES.map((c) => (
+          {CATEGORIES.filter((c) => !(user?.age_group === "minor" && (c.key === "bar" || c.key === "club"))).map((c) => (
             <Chip key={c.key} testID={`filter-category-${c.key}`} label={c.label} icon={c.icon} selected={cats.includes(c.key)} onPress={() => toggleCat(c.key)} />
           ))}
         </ScrollView>
@@ -111,7 +111,7 @@ export default function Discover() {
           action={<Button label="Réessayer" variant="secondary" onPress={() => places.refetch()} testID="discover-retry" />}
         />
       ) : view === "map" ? (
-        <CityMap places={places.data ?? []} bottomInset={bottomChrome + 80} />
+        <InteractiveMap places={places.data ?? []} />
       ) : (
         <FlatList
           testID="discover-list"

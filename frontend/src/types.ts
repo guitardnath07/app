@@ -1,4 +1,35 @@
-export type User = { user_id: string; email: string; name: string; picture?: string | null };
+export type AgeGroup = "minor" | "young" | "adult" | "senior" | "unknown";
+
+export type User = {
+  user_id: string;
+  email: string;
+  name: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  birthdate: string | null;
+  picture?: string | null;
+  age: number | null;
+  age_group: AgeGroup;
+  preferences: { interests: string[]; music: string[]; diet: string[] };
+  has_password: boolean;
+  auth_providers: string[];
+};
+
+export type Transaction = {
+  id: string;
+  date: string;
+  itinerary_id: string;
+  itinerary_name: string;
+  label: string;
+  category: string | null;
+  full: number;
+  final: number;
+  saved: number;
+  deal: string | null;
+};
+
+export type Finance = Stats & { savings_ratio: number; transactions: Transaction[] };
 
 export type Category = "resto" | "bar" | "club" | "loisirs" | "culture" | "commerce";
 

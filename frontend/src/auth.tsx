@@ -19,7 +19,11 @@ type AuthState = {
   signingIn: boolean;
   error: string | null;
   login: () => Promise<void>;
+  loginEmail: (email: string, password: string) => Promise<void>;
+  register: (b: { email: string; password: string; first_name: string; last_name: string }) => Promise<void>;
+  updateUser: (u: User) => void;
   logout: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
 };
 
 const AuthCtx = createContext<AuthState | null>(null);
@@ -147,8 +151,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await clear();
   }, [clear]);
 
+  const finishLogin = useCallback(async (res: { session_token: string; user: User }) => {
+    await storage.secureSet(TOKEN_KEY, res.session_token);
+    setApiToken(res.session_token);
+    setUser(res.user);
+  }, []);
+
+  const loginEmail = useCallback(
+    async (email: string, password: string) => {
+      finishLogin(await api("/auth/login", { method: "POST", body: { email, password } }));
+    },
+    [finishLogin],
+  );
+
+  const register = useCallback(
+    async (b: { email: string; password: string; first_name: string; last_name: string }) => {
+      finishLogin(await api("/auth/register", { method: "POST", body: b }));
+    },
+    [finishLogin],
+  );
+
+  const deleteAccount = useCallback(async () => {
+    await api("/me", { method: "DELETE" });
+    await clear();
+  }, [clear]);
+
   return (
-    <AuthCtx.Provider value={{ user, loading, signingIn, error, login, logout }}>{children}</AuthCtx.Provider>
+    <AuthCtx.Provider
+      value={{ user, loading, signingIn, error, login, loginEmail, register, updateUser: setUser, logout, deleteAccount }}
+    >
+      {children}
+    </AuthCtx.Provider>
   );
 }
 
