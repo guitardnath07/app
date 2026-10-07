@@ -16,7 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { api } from "@/src/api";
 import { DealSheet } from "@/src/components/deal-sheet";
 import { useToast } from "@/src/components/toast";
-import { Button, EmptyState, IconButton, Ionicons, PressableScale, Skeleton } from "@/src/components/ui";
+import { bounceProps, Button, EmptyState, IconButton, Ionicons, PressableScale, Skeleton } from "@/src/components/ui";
 import { CATEGORY_LABEL, DEAL_TYPE_LABEL, TRANSPORT_ICON, euro, priceLevel, timeLeft } from "@/src/constants";
 import type { Deal, Place } from "@/src/types";
 import { font, makeStyles, radius, spacing, useTheme } from "@/src/theme";
@@ -76,7 +76,7 @@ export default function PlaceDetail() {
             action={<Button label="Retour" variant="secondary" onPress={() => router.back()} testID="place-error-back" />} />
         </View>
       ) : (
-        <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xl }}>
+        <Animated.ScrollView {...bounceProps} onScroll={onScroll} scrollEventThrottle={16} contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xl }}>
           <Animated.View style={[{ height: HERO }, heroStyle]}>
             <Image source={{ uri: p.images[0] }} style={{ width: "100%", height: "100%" }} contentFit="cover" transition={300} />
             <LinearGradient colors={["rgba(0,0,0,0.45)", "transparent", "rgba(0,0,0,0.35)"]} style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }} />
@@ -102,7 +102,7 @@ export default function PlaceDetail() {
               <Animated.View entering={FadeInDown.delay(80).springify().damping(18)} style={{ gap: spacing.md }}>
                 <Text style={styles.section}>Bons plans du lieu</Text>
                 {p.deals.map((d) => (
-                  <PressableScale key={d.id} testID={`place-deal-${d.id}`} scaleTo={0.98} onPress={() => setDeal({ ...d, place: { id: p.id, name: p.name } as any })} style={styles.deal}>
+                  <PressableScale key={d.id} testID={`place-deal-${d.id}`} onPress={() => setDeal({ ...d, place: { id: p.id, name: p.name } as any })} style={styles.deal}>
                     <View style={styles.dealPct}>
                       <Text style={styles.dealPctText}>-{d.discount_pct}%</Text>
                     </View>

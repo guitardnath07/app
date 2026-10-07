@@ -1,0 +1,33 @@
+{
+  "summary": "CityPulse iteration 4 — frontend-only review of keyboard ergonomics + animations on the Expo web preview (390x844, seeded session test_session_citypulse). Verified: René is the default tab, 5 tabs render (tab-rene/tab-discover/tab-deals/tab-planner/tab-profile) with no overflow. Focus rene-input then tap on rene-chat-background (upper empty area) → activeElement becomes rene-chat-background (input blurred). Focus rene-input then drag/scroll inside the chat area → input blurred (keyboardDismissMode='on-drag' works on web). Quick actions still tappable inside the chat background wrapper: rene-quick-pluie tap triggers chat-typing (sending state). Greeting place strip tappable: rene-greeting-place-* opens /place/{slug} (verified musee-beaux-arts) and back navigation returns to /. Budget sheet opens via rene-budget-pill and rene-budget-30 is tappable, sheet closes. Tab-switching between the 5 tabs renders without blank screen (bodies: discover 4426, deals 5704, planner 6094, profile 6483 chars). Discover first place card opens place detail and back button returns to /discover. Planner shows planner-generate-button. Account shows profile stats + profile-journal-row (Carnet entry point). ONE WEB-SPECIFIC LIMITATION: pressing Enter inside rene-input does NOT trigger onSubmitEditing (no chat-user-* bubble, no chat-typing, activeElement stays rene-input). Root cause: multiline TextInput renders as <textarea> on react-native-web and Enter inserts a newline instead of firing onSubmitEditing even with returnKeyType='send' and submitBehavior='blurAndSubmit' (those are native-only). Native platforms will behave as specified (iOS/Android send on Enter + blur). On web the composer still works via the rene-send-button tap. Pre-existing benign RNW warning 'props.pointerEvents is deprecated' persists (reanimated internal). No red screens, no React errors.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "rene-input (web)", "issue": "Enter key does not send the message on the web preview because multiline TextInput renders as <textarea> in react-native-web; onSubmitEditing is not fired. On native (iOS/Android) returnKeyType='send' + submitBehavior='blurAndSubmit' will work as specified. If the user wants web parity, add a web-only onKeyPress handler on rene-input: if e.nativeEvent.key==='Enter' && !e.shiftKey → preventDefault + call send(text) when non-empty, else Keyboard.dismiss(). Reference: /app/frontend/app/(tabs)/index.tsx:168-181", "testID": "rene-input", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": [
+      {"component": "props.pointerEvents (RNW)", "issue": "Pre-existing deprecation warning from reanimated/expo internals, not blocking. Reference: console log on load."}
+    ]
+  },
+  "test_report_links": ["/app/test_reports/iteration_4.json"],
+  "action_items": [
+    "Optional web parity: add Platform.OS==='web' onKeyPress handler on rene-input in /app/frontend/app/(tabs)/index.tsx so Enter (without Shift) sends the message and blurs; empty Enter just blurs. Native behaviour (returnKeyType/submitBehavior/KeyboardAvoidingView/haptics/tabBarHideOnKeyboard) is already correct and cannot be verified via web preview — recommend verifying on an iOS/Android build or Expo Go."
+  ],
+  "critical_code_review_comments": [
+    "index.tsx:168-181 — on web, multiline TextInput ignores onSubmitEditing on Enter; consider adding onKeyPress for web parity.",
+    "_layout.tsx:49-67 — animation:'shift' + tabBarHideOnKeyboard + PressableScale tabBarButton correctly wired; no issues.",
+    "KeyboardAvoidingView from react-native-keyboard-controller used in index.tsx:114 — fine for native; on web it is a no-op which is acceptable.",
+    "keyboardDismissMode on-drag (Android/web) + interactive (iOS) on rene-chat-scroll correctly dismisses keyboard on scroll (verified on web via drag).",
+    "Pressable rene-chat-background wrapper with Keyboard.dismiss onPress correctly dismisses keyboard without blocking children taps (quick actions + place strip still tappable thanks to keyboardShouldPersistTaps='handled').",
+    "Place strip (rene-greeting-place-*) and discover place cards both navigate to /place/{id} and support back; no regressions."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "not retested (unchanged this iteration)", "frontend": "95% (all web-observable behaviours pass; Enter-to-send on web is a known RNW multiline limitation)"},
+  "seed_data_creation": "None. Reused seeded session test_session_citypulse / user_test001.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Keyboard spec is largely native-only. On web preview, verifiable items: (1) tap on rene-chat-background blurs input ✅, (2) drag/scroll inside chat blurs input ✅, (3) quick actions + place strip still tappable inside the Pressable background ✅, (4) sheets open/close ✅, (5) 5-tab nav ✅. Non-verifiable on web: returnKeyType/submitBehavior for Enter-to-send on multiline TextInput (RNW renders <textarea>, Enter inserts newline). Workaround if required: add Platform.OS==='web' onKeyPress on rene-input. Rene chat replies take ~8-12s (Claude).",
+  "rca_of_issue": "On web preview Enter inside rene-input does not send the message. RCA: react-native-web renders <TextInput multiline={true}> as a <textarea>; onSubmitEditing is only emitted when the native Return key fires 'submit', which textarea does not do on Enter (Enter inserts a newline). The returnKeyType='send' and submitBehavior='blurAndSubmit' props are respected only by native iOS/Android. Mitigation: add a web-only onKeyPress handler that intercepts Enter without Shift, calls preventDefault, and invokes send(text) or Keyboard.dismiss() when empty. Native builds are unaffected and will behave per spec."
+}

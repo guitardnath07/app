@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useEffect, useRef, useState } from "react";
-import { ScrollView, Text, TextInput, View } from "react-native";
+import { Keyboard, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -10,7 +10,7 @@ import { useAuth } from "@/src/auth";
 import { Bubble, PlaceStrip, ReneAvatar, ReneMessage, Typing } from "@/src/components/rene/chat-parts";
 import { Sheet } from "@/src/components/sheet";
 import { useToast } from "@/src/components/toast";
-import { Chip, IconButton, Ionicons, PressableScale, Skeleton, T } from "@/src/components/ui";
+import { bounceProps, Chip, IconButton, Ionicons, PressableScale, Skeleton, T } from "@/src/components/ui";
 import { usesNativeTabs } from "@/src/navigation";
 import type { Place } from "@/src/types";
 import { font, makeStyles, radius, spacing, useTheme } from "@/src/theme";
@@ -56,6 +56,7 @@ export default function Rene() {
     const m = message.trim();
     if (!m || sending) return;
     setText("");
+    Keyboard.dismiss();
     const temp: ReneMessage = { id: `tmp-${Date.now()}`, role: "user", text: m, created_at: new Date().toISOString(), places: [], follow_ups: [] };
     setMessages((x) => [...x, temp]);
     setSending(true);
@@ -110,8 +111,18 @@ export default function Rene() {
         {messages.length ? <IconButton icon="trash-outline" size={40} onPress={clear} testID="rene-clear-button" /> : null}
       </View>
 
-      <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }} keyboardVerticalOffset={0}>
-        <ScrollView ref={scroll} contentContainerStyle={{ paddingVertical: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled" onContentSizeChange={() => messages.length && scroll.current?.scrollToEnd({ animated: false })}>
+      <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }} keyboardVerticalOffset={0} testID="rene-keyboard-avoiding">
+        <ScrollView
+          ref={scroll}
+          testID="rene-chat-scroll"
+          {...bounceProps}
+          keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ flexGrow: 1 }}
+          onContentSizeChange={() => messages.length && scroll.current?.scrollToEnd({ animated: false })}
+        >
+          {/* Tap anywhere on the conversation background to hide the keyboard */}
+          <Pressable testID="rene-chat-background" accessible={false} onPress={Keyboard.dismiss} style={{ flexGrow: 1, paddingVertical: spacing.lg, gap: spacing.lg }}>
           {greeting.isLoading ? (
             <View style={{ paddingHorizontal: spacing.lg, gap: spacing.md }}>
               <Skeleton style={{ height: 70, width: "80%" }} />
@@ -131,7 +142,7 @@ export default function Rene() {
                 <Text style={styles.actionsTitle}>Raccourcis</Text>
                 {g.quick_actions.map((a, i) => (
                   <Animated.View key={a.id} entering={FadeInDown.delay(150 + i * 50).springify().damping(18)}>
-                    <PressableScale testID={`rene-quick-${a.id}`} scaleTo={0.98} disabled={sending} onPress={() => send(a.label, a.id)} style={styles.action}>
+                    <PressableScale testID={`rene-quick-${a.id}`} disabled={sending} onPress={() => send(a.label, a.id)} style={styles.action}>
                       <View style={styles.actionIcon}>
                         <Ionicons name={a.icon as any} size={18} color={colors.onBrandTertiary} />
                       </View>
@@ -150,6 +161,7 @@ export default function Rene() {
             ))}
             {sending ? <Typing /> : null}
           </View>
+          </Pressable>
         </ScrollView>
 
         <View style={[styles.composer, { paddingBottom: bottomChrome + spacing.sm }]}>
@@ -162,9 +174,18 @@ export default function Rene() {
             style={styles.input}
             multiline
             maxLength={600}
-            onSubmitEditing={() => send(text)}
-            blurOnSubmit
             returnKeyType="send"
+            enterKeyHint="send"
+            submitBehavior="blurAndSubmit"
+            onSubmitEditing={() => (text.trim() ? send(text) : Keyboard.dismiss())}
+            onKeyPress={(e: any) => {
+              // Web textarea: Enter sends (Shift+Enter = new line)
+              if (Platform.OS === "web" && e.nativeEvent.key === "Enter" && !e.nativeEvent.shiftKey) {
+                e.preventDefault?.();
+                if (text.trim()) send(text);
+                (e.target as any)?.blur?.();
+              }
+            }}
           />
           <PressableScale testID="rene-send-button" disabled={!text.trim() || sending} onPress={() => send(text)} style={[styles.send, (!text.trim() || sending) && { opacity: 0.4 }]}>
             <Ionicons name="arrow-up" size={20} color={colors.onBrandPrimary} />

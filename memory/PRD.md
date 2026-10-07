@@ -33,6 +33,11 @@ App mobile "CityPulse" : assistant intelligent de sorties, bons plans et organis
 - Map: distinct marker per category, address in popup
 - Tests: 47/47 backend, frontend OK (iteration_3)
 
+## Iteration 4 (2026-06)
+- René keyboard fix: tap chat background / drag dismisses keyboard, send+blur on submit (web Enter too), KeyboardAvoidingView + tabBarHideOnKeyboard
+- Animations: tab 'shift' transitions, tab buttons scale, PressableScale 0.97 + haptics (native), place/itinerary slide-from-bottom, spring sheets, bounce scroll on all lists
+- Tests: iteration_4 frontend OK
+
 ## Backlog
 - P1: partage d'itinéraire, réservation, date future de sortie dans le planner
 - P1: vraie carte (react-native-maps en build natif), géolocalisation

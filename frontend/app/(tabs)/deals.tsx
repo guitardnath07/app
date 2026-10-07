@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { api } from "@/src/api";
 import { DealSheet } from "@/src/components/deal-sheet";
-import { Button, Chip, EmptyState, Ionicons, PressableScale, Skeleton } from "@/src/components/ui";
+import { bounceProps, Button, Chip, EmptyState, Ionicons, PressableScale, Skeleton } from "@/src/components/ui";
 import { DEAL_TYPES, DEAL_TYPE_LABEL, timeLeft } from "@/src/constants";
 import { usesNativeTabs } from "@/src/navigation";
 import type { Deal } from "@/src/types";
@@ -41,6 +41,7 @@ export default function Deals() {
       </View>
 
       <ScrollView
+        {...bounceProps}
         contentContainerStyle={{ paddingBottom: bottomChrome + spacing.xl, paddingTop: spacing.lg }}
         refreshControl={<RefreshControl refreshing={deals.isRefetching} onRefresh={deals.refetch} tintColor={colors.brandPrimary} />}
       >
@@ -88,7 +89,7 @@ export default function Deals() {
               {!type ? <Text style={[styles.section, { marginBottom: spacing.xs }]}>Le fil des réductions</Text> : null}
               {rest.map((d, i) => (
                 <Animated.View key={d.id} entering={FadeInDown.delay(i * 50).springify().damping(18)}>
-                  <PressableScale testID={`deal-row-${d.id}`} scaleTo={0.98} onPress={() => setOpen(d)} style={styles.row}>
+                  <PressableScale testID={`deal-row-${d.id}`} onPress={() => setOpen(d)} style={styles.row}>
                     <Image source={{ uri: d.image }} style={styles.rowImg} contentFit="cover" />
                     <View style={{ flex: 1, gap: 3 }}>
                       <Text style={styles.rowType}>

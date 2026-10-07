@@ -123,7 +123,7 @@ export function FinancePanel() {
         ) : (
           <View style={styles.list} testID="finance-history">
             {f.transactions.map((t, i) => (
-              <PressableScale key={t.id} testID={`finance-tx-${t.id}`} scaleTo={0.98} onPress={() => router.push(`/itinerary/${t.itinerary_id}`)} style={[styles.tx, i > 0 && styles.sep]}>
+              <PressableScale key={t.id} testID={`finance-tx-${t.id}`} onPress={() => router.push(`/itinerary/${t.itinerary_id}`)} style={[styles.tx, i > 0 && styles.sep]}>
                 <View style={styles.txIcon}>
                   <Ionicons name={(t.category === "transport" ? "bus-outline" : CATEGORY_ICON[t.category ?? ""] ?? "pricetag-outline") as any} size={16} color={colors.onSurface} />
                 </View>
@@ -183,7 +183,7 @@ export function LinkRow({ icon, label, onPress, testID, color }: { icon: string;
   const styles = useStyles();
   const { colors } = useTheme();
   return (
-    <PressableScale testID={testID} onPress={onPress} scaleTo={0.98} style={styles.row}>
+    <PressableScale testID={testID} onPress={onPress} style={styles.row}>
       <Ionicons name={icon as any} size={20} color={color ?? colors.onSurface} />
       <Text style={[styles.rowLabel, color ? { color } : null]}>{label}</Text>
       <Ionicons name="chevron-forward" size={18} color={colors.muted} />

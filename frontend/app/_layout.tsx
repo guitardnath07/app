@@ -51,7 +51,10 @@ function Gate() {
   return (
     <>
       <StatusBar style={scheme === "dark" ? "light" : "dark"} />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.surface } }} />
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.surface }, animation: "slide_from_right", gestureEnabled: true }}>
+        <Stack.Screen name="place/[id]" options={{ animation: "slide_from_bottom", gestureDirection: "vertical", fullScreenGestureEnabled: true, animationDuration: 380 }} />
+        <Stack.Screen name="itinerary/[id]" options={{ animation: "slide_from_bottom", gestureDirection: "vertical", animationDuration: 380 }} />
+      </Stack>
     </>
   );
 }

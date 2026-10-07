@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { api } from "@/src/api";
 import { EconomicsCard, Timeline } from "@/src/components/timeline";
 import { useToast } from "@/src/components/toast";
-import { Button, EmptyState, Ionicons, Skeleton, T } from "@/src/components/ui";
+import { bounceProps, Button, EmptyState, Ionicons, Skeleton, T } from "@/src/components/ui";
 import { MODE_LABEL } from "@/src/constants";
 import type { Itinerary } from "@/src/types";
 import { font, radius, spacing, useTheme } from "@/src/theme";
@@ -44,7 +44,7 @@ export default function ItineraryDetail() {
       ) : !it ? (
         <EmptyState icon="alert-circle-outline" title="Itinéraire introuvable" testID="itinerary-error" />
       ) : (
-        <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl, paddingBottom: insets.bottom + spacing.xl }}>
+        <ScrollView {...bounceProps} contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl, paddingBottom: insets.bottom + spacing.xl }}>
           <View style={{ gap: spacing.sm }}>
             <T variant="title" testID="itinerary-name">{it.name}</T>
             <Text style={{ fontFamily: font.regular, fontSize: 13, color: colors.muted }}>

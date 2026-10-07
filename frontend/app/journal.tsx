@@ -7,7 +7,7 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { api } from "@/src/api";
-import { Button, EmptyState, IconButton, Ionicons, PressableScale, Skeleton } from "@/src/components/ui";
+import { bounceProps, Button, EmptyState, IconButton, Ionicons, PressableScale, Skeleton } from "@/src/components/ui";
 import { euro } from "@/src/constants";
 import type { Itinerary } from "@/src/types";
 import { font, makeStyles, radius, spacing, useTheme } from "@/src/theme";
@@ -39,6 +39,7 @@ export default function Journal() {
         </View>
       ) : (
         <FlatList
+          {...bounceProps}
           data={q.data}
           keyExtractor={(i) => i.id}
           contentContainerStyle={{ padding: spacing.lg, gap: spacing.md, paddingBottom: insets.bottom + spacing.xl }}
@@ -50,7 +51,7 @@ export default function Journal() {
             const first = item.plan.steps.find((s) => s.place)?.place;
             return (
               <Animated.View entering={FadeInDown.delay(index * 60).springify().damping(18)}>
-                <PressableScale testID={`journal-item-${item.id}`} scaleTo={0.98} onPress={() => router.push(`/itinerary/${item.id}`)} style={styles.card}>
+                <PressableScale testID={`journal-item-${item.id}`} onPress={() => router.push(`/itinerary/${item.id}`)} style={styles.card}>
                   {first ? <Image source={{ uri: first.image }} style={styles.img} contentFit="cover" /> : <View style={styles.img} />}
                   <View style={{ flex: 1, gap: 3 }}>
                     <Text style={styles.date}>

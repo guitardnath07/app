@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/src/auth";
 import { FinancePanel } from "@/src/components/account/finance-panel";
 import { AGE_GROUP_LABEL, ProfilePanel } from "@/src/components/account/profile-panel";
-import { PressableScale } from "@/src/components/ui";
+import { bounceProps, PressableScale } from "@/src/components/ui";
 import { usesNativeTabs } from "@/src/navigation";
 import { font, makeStyles, radius, spacing, useTheme } from "@/src/theme";
 
@@ -54,6 +54,9 @@ export default function Account() {
         </View>
       </View>
       <KeyboardAwareScrollView
+        {...bounceProps}
+        keyboardDismissMode="interactive"
+        keyboardShouldPersistTaps="handled"
         bottomOffset={24}
         contentContainerStyle={{ padding: spacing.lg, paddingBottom: bottomChrome + spacing.xl }}
         refreshControl={tab === "finance" ? <RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={colors.brandPrimary} /> : undefined}

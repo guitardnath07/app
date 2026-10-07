@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { api } from "@/src/api";
 import { PlaceCard } from "@/src/components/place-card";
-import { Button, EmptyState, Skeleton } from "@/src/components/ui";
+import { bounceProps, Button, EmptyState, Skeleton } from "@/src/components/ui";
 import type { Place } from "@/src/types";
 import { spacing, useTheme } from "@/src/theme";
 
@@ -25,6 +25,7 @@ export default function Favorites() {
         </View>
       ) : (
         <FlatList
+          {...bounceProps}
           data={q.data}
           keyExtractor={(p) => p.id}
           renderItem={({ item, index }) => <PlaceCard place={item} index={index} compact />}

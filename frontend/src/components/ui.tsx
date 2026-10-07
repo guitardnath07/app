@@ -1,6 +1,7 @@
 import { Ionicons } from "@react-native-vector-icons/ionicons";
+import * as Haptics from "expo-haptics";
 import React, { useEffect } from "react";
-import { Pressable, PressableProps, StyleProp, Text, TextProps, View, ViewStyle } from "react-native";
+import { Platform, Pressable, PressableProps, StyleProp, Text, TextProps, View, ViewStyle } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -23,20 +24,22 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 export function PressableScale({
   style,
   children,
-  scaleTo = 0.96,
+  scaleTo = 0.97,
+  haptic = true,
   ...rest
-}: PressableProps & { style?: StyleProp<ViewStyle>; scaleTo?: number; children?: React.ReactNode }) {
+}: PressableProps & { style?: StyleProp<ViewStyle>; scaleTo?: number; haptic?: boolean; children?: React.ReactNode }) {
   const s = useSharedValue(1);
   const a = useAnimatedStyle(() => ({ transform: [{ scale: s.value }] }));
   return (
     <AnimatedPressable
       {...rest}
       onPressIn={(e) => {
-        s.value = withSpring(scaleTo, { damping: 18, stiffness: 400 });
+        s.value = withSpring(scaleTo, { damping: 20, stiffness: 420, mass: 0.6 });
+        if (haptic && Platform.OS !== "web") Haptics.selectionAsync().catch(() => {});
         rest.onPressIn?.(e);
       }}
       onPressOut={(e) => {
-        s.value = withSpring(1, { damping: 14, stiffness: 300 });
+        s.value = withSpring(1, { damping: 15, stiffness: 260, mass: 0.7 });
         rest.onPressOut?.(e);
       }}
       style={[style, a]}
@@ -45,6 +48,14 @@ export function PressableScale({
     </AnimatedPressable>
   );
 }
+
+// iOS-like elastic scrolling on every vertical list (Android: overscroll glow/stretch).
+export const bounceProps = {
+  bounces: true,
+  alwaysBounceVertical: true,
+  overScrollMode: "always" as const,
+  decelerationRate: "normal" as const,
+};
 
 export function T({
   variant = "body",

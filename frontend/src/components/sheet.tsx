@@ -22,11 +22,11 @@ export function Sheet({
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose} statusBarTranslucent>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-        <Animated.View entering={FadeIn.duration(200)} style={{ flex: 1, backgroundColor: colors.overlay }}>
+        <Animated.View entering={FadeIn.duration(220)} style={{ flex: 1, backgroundColor: colors.overlay }}>
           <Pressable testID="sheet-backdrop" style={{ flex: 1 }} onPress={onClose} />
           <Animated.View
             testID={testID}
-            entering={SlideInDown.springify().damping(20).stiffness(180)}
+            entering={SlideInDown.springify().damping(19).stiffness(170).mass(0.9)}
             style={{
               backgroundColor: colors.surfaceSecondary,
               borderTopLeftRadius: radius.lg + 8,

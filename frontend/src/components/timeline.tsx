@@ -52,7 +52,7 @@ export function Timeline({
             </View>
             <PressableScale
               testID={`timeline-step-${s.index}`}
-              scaleTo={0.98}
+             
               disabled={!s.place}
               onPress={() => s.place && router.push(`/place/${s.place.id}`)}
               style={styles.card}

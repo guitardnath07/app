@@ -18,7 +18,7 @@ import { useAuth } from "@/src/auth";
 import { Sheet } from "@/src/components/sheet";
 import { EconomicsCard, Timeline } from "@/src/components/timeline";
 import { useToast } from "@/src/components/toast";
-import { Button, Chip, Ionicons, PressableScale, T } from "@/src/components/ui";
+import { bounceProps, Button, Chip, Ionicons, PressableScale, T } from "@/src/components/ui";
 import { MODE_ICON, MODE_LABEL } from "@/src/constants";
 import { usesNativeTabs } from "@/src/navigation";
 import type { Plan, PlanParams, Step } from "@/src/types";
@@ -182,7 +182,7 @@ export default function Planner() {
             {plan.params.start}–{plan.params.end} · {plan.params.people} pers.
           </Text>
         </View>
-        <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl, paddingBottom: bottomChrome + 100 }}>
+        <ScrollView {...bounceProps} contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl, paddingBottom: bottomChrome + 100 }}>
           <Animated.View entering={FadeInDown.springify().damping(18)} style={{ gap: spacing.sm }}>
             <View style={styles.aiTag}>
               <Ionicons name="sparkles" size={13} color={colors.onBrandTertiary} />
@@ -233,7 +233,7 @@ export default function Planner() {
         <Text style={styles.sub}>Organisateur IA</Text>
         <Text style={styles.title}>Ma journée parfaite</Text>
       </View>
-      <KeyboardAwareScrollView bottomOffset={96} contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl, paddingBottom: bottomChrome + 120 }}>
+      <KeyboardAwareScrollView {...bounceProps} keyboardDismissMode="interactive" keyboardShouldPersistTaps="handled" bottomOffset={96} contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl, paddingBottom: bottomChrome + 120 }}>
         {minor ? (
           <View style={styles.minor} testID="planner-minor-banner">
             <Ionicons name="shield-checkmark-outline" size={18} color={colors.onBrandTertiary} />

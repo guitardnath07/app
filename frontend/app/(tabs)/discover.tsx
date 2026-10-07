@@ -8,7 +8,7 @@ import { api } from "@/src/api";
 import { useAuth } from "@/src/auth";
 import { InteractiveMap } from "@/src/components/map/interactive-map";
 import { PlaceCard } from "@/src/components/place-card";
-import { Button, Chip, EmptyState, Ionicons, PressableScale, Skeleton } from "@/src/components/ui";
+import { bounceProps, Button, Chip, EmptyState, Ionicons, PressableScale, Skeleton } from "@/src/components/ui";
 import { CATEGORIES } from "@/src/constants";
 import { usesNativeTabs } from "@/src/navigation";
 import type { Place } from "@/src/types";
@@ -119,6 +119,7 @@ export default function Discover() {
       ) : (
         <FlatList
           testID="discover-list"
+          {...bounceProps}
           data={places.data}
           keyExtractor={(p) => p.id}
           renderItem={({ item, index }) => <PlaceCard place={item} index={index} />}

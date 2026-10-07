@@ -3,7 +3,7 @@ import { NativeTabs } from "expo-router/unstable-native-tabs";
 import React from "react";
 import { Platform } from "react-native";
 
-import { Ionicons } from "@/src/components/ui";
+import { Ionicons, PressableScale } from "@/src/components/ui";
 import { usesNativeTabs } from "@/src/constants";
 import { font, useTheme } from "@/src/theme";
 
@@ -48,6 +48,13 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        animation: "shift",
+        tabBarHideOnKeyboard: true,
+        tabBarButton: ({ children, onPress, onLongPress, accessibilityState, style, testID }: any) => (
+          <PressableScale testID={testID} onPress={onPress} onLongPress={onLongPress} accessibilityRole="tab" accessibilityState={accessibilityState} style={style} scaleTo={0.92}>
+            {children}
+          </PressableScale>
+        ),
         tabBarActiveTintColor: colors.brandPrimary,
         tabBarInactiveTintColor: colors.muted,
         tabBarStyle: {

@@ -17,7 +17,7 @@ export function PlaceCard({ place, index = 0, compact }: { place: Place; index?:
     <Animated.View entering={FadeInDown.delay(Math.min(index, 6) * 60).springify().damping(18)}>
       <PressableScale
         testID={`place-card-${place.id}`}
-        scaleTo={0.98}
+       
         onPress={() => router.push(`/place/${place.id}`)}
         style={[styles.card, compact && { height: 180 }]}
       >
